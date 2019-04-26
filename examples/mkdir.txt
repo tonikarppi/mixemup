@@ -1,0 +1,7 @@
+-m 666
+-p
+-v
+-Z
+--context CTX
+--help
+--version

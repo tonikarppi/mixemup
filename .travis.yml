@@ -1,0 +1,54 @@
+language: python
+
+dist: xenial
+
+python:
+  - "3.7"
+
+before_install:
+  - docker build -t tonikarppi/mixemup-builder:latest --target builder --cache-from tonikarppi/mixemup-builder:latest .
+  - docker build -t tonikarppi/mixemup:latest --cache-from tonikarppi/mixemup:latest --cache-from tonikarppi/mixemup-builder:latest .
+  - docker create --name mixemup tonikarppi/mixemup:latest
+  - docker cp mixemup:/app/dist dist
+
+install:
+  - pip install pre-commit pytest mypy twine
+  - pip install dist/*.whl
+  - pre-commit install-hooks
+
+script:
+  - pre-commit run -a
+  - pytest
+
+after_success:
+  - export PRETTY_COMMIT=$(git log -1 $TRAVIS_COMMIT --pretty=%h)
+  - docker tag tonikarppi/mixemup:latest tonikarppi/mixemup:$PRETTY_COMMIT
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  - docker push tonikarppi/mixemup:$PRETTY_COMMIT
+  - docker push tonikarppi/mixemup:latest
+  - docker push tonikarppi/mixemup-builder:latest
+
+deploy:
+  - provider: script
+    skip_cleanup: true
+    script: twine upload --skip-existing dist/*
+    on:
+      tags: true
+      branch: master
+  - provider: releases
+    skip_cleanup: true
+    draft: true
+    api_key: $GITHUB_TOKEN
+    file_glob: true
+    file: dist/*
+    on:
+      tags: true
+      branch: master
+
+cache:
+  pip: true
+  directories:
+    - $HOME/.cache/pre-commit
+
+notifications:
+  email: false
