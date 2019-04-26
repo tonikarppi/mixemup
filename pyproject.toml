@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mixemup"
-version = "2.0.2"
+version = "2.1.0"
 description = "Lists out permutations of lines in files."
 authors = ["Toni Karppi <karppitoni@gmail.com>"]
 license = "MIT"
