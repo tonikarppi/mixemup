@@ -6,7 +6,7 @@ python:
   - "3.7"
 
 install:
-  - sh .scripts/travis_build_docker.sh
+  - sh .scripts/travis_docker_build.sh
   - pip install twine
 
 script:
