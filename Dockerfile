@@ -1,6 +1,6 @@
 FROM python:3.7-alpine as builder
 
-# Install required packages
+# Install required packages.
 RUN apk add --no-cache build-base
 
 # Set up working directory.
