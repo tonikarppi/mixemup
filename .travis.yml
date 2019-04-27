@@ -23,7 +23,7 @@ install:
     --target tester
     --cache-from $IMG:tester
     -t $IMG:tester .
-  - docker build $IMG:latest -t $IMG:latest
+  - docker build -t $IMG:latest .
   - pip install twine
 
 script:
