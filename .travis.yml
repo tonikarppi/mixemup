@@ -5,28 +5,30 @@ dist: xenial
 python:
   - "3.7"
 
+env:
+  IMG=tonikarppi/mixemup
+
 before_install:
-  - docker build -t tonikarppi/mixemup-builder:latest --target builder --cache-from tonikarppi/mixemup-builder:latest .
-  - docker build -t tonikarppi/mixemup:latest --cache-from tonikarppi/mixemup:latest --cache-from tonikarppi/mixemup-builder:latest .
-  - docker create --name mixemup tonikarppi/mixemup:latest
-  - docker cp mixemup:/app/dist dist
+  - docker pull $IMG:builder || true
+  - docker pull $IMG:tester || true
 
 install:
-  - pip install pre-commit pytest mypy twine
-  - pip install dist/*.whl
-  - pre-commit install-hooks
+  - >
+    docker build
+    --target builder
+    --cache-from $IMG:builder
+    -t $IMG:builder .
+  - >
+    docker build
+    --target tester
+    --cache-from $IMG:tester
+    -t $IMG:tester .
+  - docker build $IMG:latest -t $IMG:latest
+  - pip install twine
 
 script:
-  - pre-commit run -a
-  - pytest
-
-after_success:
-  - export PRETTY_COMMIT=$(git log -1 $TRAVIS_COMMIT --pretty=%h)
-  - docker tag tonikarppi/mixemup:latest tonikarppi/mixemup:$PRETTY_COMMIT
-  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-  - docker push tonikarppi/mixemup:$PRETTY_COMMIT
-  - docker push tonikarppi/mixemup:latest
-  - docker push tonikarppi/mixemup-builder:latest
+  - docker create --name mixemup tonikarppi/mixemup:latest
+  - docker cp mixemup:/app/dist dist
 
 deploy:
   - provider: script
@@ -44,11 +46,14 @@ deploy:
     on:
       tags: true
       branch: master
+  - provider: script
+    skip_cleanup: true
+    script: sh .scripts/travis_deploy_docker.sh
+    on:
+      branch: master
 
 cache:
   pip: true
-  directories:
-    - $HOME/.cache/pre-commit
 
 notifications:
   email: false
