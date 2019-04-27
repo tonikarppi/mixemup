@@ -24,11 +24,41 @@ RUN poetry install --no-dev
 COPY *.py README.md ./
 RUN poetry build
 
-CMD ["/bin/ash"]
+FROM python:3.7-alpine as tester
 
-FROM scratch
+# Install required packages
+RUN apk add --no-cache build-base git
 
-# Copy built files.
-COPY --from=builder /app/dist /app/dist
+# Set up working directory.
+WORKDIR /app
 
-CMD ["COPY THE FILES FROM /app/dist TO A HOST"]
+# Install required python packages.
+RUN pip install --no-cache-dir pre-commit pytest mypy
+
+# Install pre-commit hooks.
+COPY .git .git
+COPY .pre-commit-config.yaml .
+RUN pre-commit install-hooks
+
+# Install wheel.
+COPY --from=builder /app/dist dist
+RUN pip install dist/*.whl
+
+# Run pre-commit checks.
+COPY *.py .flake8 ./
+RUN pre-commit run -a
+
+# Run tests.
+COPY examples examples
+RUN pytest
+
+FROM python:3.7-alpine
+
+# Set up working directory.
+WORKDIR /app
+
+# Install wheel.
+COPY --from=tester /app/dist /app/dist
+RUN pip install dist/*.whl
+
+ENTRYPOINT [ "mixemup" ]
