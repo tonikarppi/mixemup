@@ -36,7 +36,7 @@ RUN mypy mixemup.py
 COPY README.md .
 RUN poetry build
 
-# Install project
+# Install wheel.
 RUN pip install --user dist/*.whl
 
 # Run tests.
