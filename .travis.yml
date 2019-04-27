@@ -5,25 +5,8 @@ dist: xenial
 python:
   - "3.7"
 
-env:
-  IMG=tonikarppi/mixemup
-
-before_install:
-  - docker pull $IMG:builder || true
-  - docker pull $IMG:tester || true
-
 install:
-  - >
-    docker build
-    --target builder
-    --cache-from $IMG:builder
-    -t $IMG:builder .
-  - >
-    docker build
-    --target tester
-    --cache-from $IMG:tester
-    -t $IMG:tester .
-  - docker build -t $IMG:latest .
+  - sh .scripts/travis_build_docker.sh
   - pip install twine
 
 script:
