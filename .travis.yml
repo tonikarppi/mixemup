@@ -31,7 +31,7 @@ deploy:
       branch: master
   - provider: script
     skip_cleanup: true
-    script: sh .scripts/travis_deploy_docker.sh
+    script: sh .scripts/travis_docker_deploy.sh
     on:
       branch: master
 
