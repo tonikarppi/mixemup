@@ -7,4 +7,4 @@ IMG=tonikarppi/mixemup
 docker pull $IMG:builder || true
 
 docker build --target builder --cache-from $IMG:builder -t $IMG:builder .
-docker build -t $IMG:latest .
+docker build --cache-from $IMG:builder -t $IMG:latest .
