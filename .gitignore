@@ -7,7 +7,7 @@
 !.flake8
 !.pre-commit-config.yaml
 !.travis.yml
-!.scripts/
+!scripts/
 !Dockerfile
 !pyproject.toml
 !poetry.lock
