@@ -2,6 +2,8 @@
 
 set -e
 
+IMG=tonikarppi/mixemup
+
 docker pull $IMG:builder || true
 
 docker build --target builder --cache-from $IMG:builder -t $IMG:builder .
